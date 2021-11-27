@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Bookings>
+  <booking booking_index="0">
+    <IdRestaurant>5</IdRestaurant>
+    <IndexMasa>4</IndexMasa>
+  </booking>
+  <booking booking_index="1">
+    <IdRestaurant>7</IdRestaurant>
+    <IndexMasa>10</IndexMasa>
+  </booking>
+</Bookings>

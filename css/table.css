@@ -1,0 +1,25 @@
+
+.tableBackground{
+    position: absolute;
+    margin: 0;
+    color: rgb(255, 0, 0);
+    left: 10vw;
+}
+.tableButton{
+    height: 3vw;
+    width: 3vw;
+    /* background: url('images/redtable.png') no-repeat;
+     */
+     background: rgb(0, 255, 0);
+    background-position: 50%;
+    background-size: 5vh;
+    border: 0.1vh solid black;
+    margin: 0.2vw;
+    transition: all 0.2s ease ;
+}
+
+.allGarbage{
+    position: absolute;
+    top: 5vh;
+    left: 50vw;
+}

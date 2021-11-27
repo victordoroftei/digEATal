@@ -1,0 +1,287 @@
+<?php 
+    
+    require_once("xml/xml.php");
+
+    define("cookie_log_in", "mail");
+
+     echo $_POST['restaurant'] . "<br>";
+
+    if(isset($_POST['internalArr']))
+        {
+            $mainArray = explode("|", $_POST['internalArr']);
+
+            echo $mainArray[0];
+
+            $restaurantId = $mainArray[0];
+
+            $bigArray = explode(";", $mainArray[1]);
+
+            $arr = array();
+            for($i = 0; $i < count($bigArray); $i++)
+            {
+                $smallArray = explode(",", $bigArray[$i]);
+
+                if(count($smallArray) == 3)
+                {
+                    $index = (int)$smallArray[0] * ROWNUM + (int)$smallArray[1];
+
+                    $cell = new Cell($index, $smallArray[2]);
+                    array_push($arr, $cell);
+                    //echo "$cell\n";
+                }
+            }
+
+            if(isset($_COOKIE[cookie_log_in]))
+            {
+                // echo $arr[1] . "*" . $restaurantId;
+                fromSingleArrayToXMLGrid($arr, $_COOKIE[cookie_log_in], $restaurantId);
+            }
+
+            else
+                echo "<script> window.location.href = 'login.php'; </script>";
+        }
+
+?>
+
+<html>
+<head>
+
+<link rel = "stylesheet" href = "css/table.css">
+    <script src="js/jquery-3.6.0.js"></script>
+  <link href="aboutme/css/backgge.css" rel="stylesheet">
+  <link href="aboutme/css/aos.css" rel="stylesheet">
+  <link href="aboutme/css/bootstrap.min.css" rel="stylesheet">
+  <link href="aboutme/css/boxicons.min.css" rel="stylesheet">
+  <link href="aboutme/css/style.css" rel="stylesheet">
+  <link href="aboutme/css/restaurants.css" rel="stylesheet">
+
+</head>
+<body>
+<!-- MENU -->
+<div class="allgarbage" style="position: absolut;top: 5vh; left: 30vw;"></div>
+    <button id="submit" onclick="submit()" style="position: fix;margin-top: 5vh; margin-left: 70vw;">Book Table</button>
+    <button onclick="window.location.href='index.php'">Back</button>
+</div>
+
+    
+<!-- END MENU -->
+
+<!-- RESTAURANT -->
+<script type="text/javascript" src="/js/table.js"> </script>
+
+
+<script>
+
+    function blockCells()
+    {
+        for (row = 0; row < 10; row += 1)
+            for (col = 0; col < 10; col += 1)    
+            {
+                var element = document.getElementById(row + " " + col);
+                var color = getComputedStyle(element, "").backgroundColor;
+
+                if (color == "rgb(255, 0, 0)" || color == "rgb(104, 104, 104)")
+                {
+                    element.setAttribute("disabled", true);
+                }
+            }
+    }
+
+    function loadCell(row, column, color)
+    {
+        var createID = row + ' ' + column;
+        document.getElementById(createID).style.background = color;
+    }
+
+    class Cell
+    {
+        constructor(xcoord, ycoord, status) 
+        {
+            this.xcoord = xcoord;
+            this.ycoord = ycoord;
+            this.status = status;
+        }
+    }
+
+    Cell.prototype.toString = function() 
+    {
+        return "[" + this.xcoord + "," + this.ycoord + "," + this.status + "]";
+    }
+
+    function loadAllCells()
+    {
+        var dict = 
+        {
+            "FREE": "rgb(0, 255, 0)",
+            "OCCUPIED": "rgb(255, 0, 0)",
+            "NONE": "rgb(104, 104, 104)"
+        };
+
+
+        var arr = 
+        <?php 
+
+            $conn = new mysqli("localhost", "root", "", "site");
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $sql = "select mail from restaurants WHERE id = ?";
+            $statement = $conn->prepare($sql);
+            $post = (int) $_POST['restaurant'];
+
+
+            $statement->bind_param("i", $post);
+            $statement->execute();
+
+            $result = $statement->get_result();
+            $mail = "";
+            while($row = $result->fetch_assoc())
+            {
+                $mail = $row['mail'];
+            }
+
+                $arr = fromXMLToArrayGrid($mail, $_POST['restaurant']); 
+                echo json_encode($arr); 
+        ?>;
+
+        for (index = 0; index < 100; index += 1)
+        {
+            var c = new Cell(arr[index]['xcoord'], arr[index]['ycoord'], arr[index]['status'][0]);
+
+            loadCell(c.xcoord, c.ycoord, dict[c.status])
+        }
+    }
+
+    loadAllCells();
+    blockCells();
+
+</script>
+
+<div class="d-flex flex-column">
+
+    
+     
+<script>
+
+    function doLogic(dataString)
+    {
+        var form = document.createElement('form');
+        form.setAttribute("method", "post");
+        form.setAttribute("action", "booking.php");
+
+        var input = document.createElement('input');
+        input.setAttribute('name', 'internalArr');
+        input.setAttribute('type', 'text');
+        input.setAttribute('value', dataString);
+        input.setAttribute('hidden', true);
+
+        var input2 = document.createElement('input');
+        input2.setAttribute('name', 'restaurant');
+        input2.setAttribute('type', 'text');
+         input2.setAttribute('value', '<?php echo $_POST['restaurant']; ?>');
+        input2.setAttribute('hidden', true);
+
+        var s = document.createElement("input");
+        s.setAttribute("id", "sub");
+        s.setAttribute("type", "submit");
+        s.setAttribute("value", "Submit");
+        s.setAttribute('hidden', true);
+
+        form.appendChild(input);
+        form.appendChild(s);
+        form.appendChild(input2);
+
+        document.getElementsByTagName('body')[0].appendChild(form);
+
+        $(document).ready(function(){
+                    
+            $("#sub").click();
+        });
+    }
+
+    var dict = 
+    {
+        "rgb(0, 255, 0)": "FREE",
+        "rgb(255, 0, 0)": "OCCUPIED",
+        "rgb(104, 104, 104)": "NONE"
+    };
+
+    function submit()
+    {
+        var array = [];
+
+        for (row = 0; row < 10; row += 1)
+            for (col = 0; col < 10; col += 1)
+            {
+                // rgb(255, 0, 0) - red
+                // rgb(0, 255, 0) - green
+                // rgb(104, 104, 104) - gray
+
+                var myDivObjBgColor = getComputedStyle( document.getElementById(row + ' ' + col), "").backgroundColor;
+                
+                var element = document.getElementById(row + ' ' + col);
+                var value = element.getAttribute('value');
+                var status = dict[myDivObjBgColor];
+
+                var c = new Cell(row, col, status);
+                array.push(c);
+
+                console.log(value);
+
+            }
+
+        //alert(array.toString());
+        bigString = "";
+
+        for(i = 0; i < array.length; i++)
+        {
+            bigString += array[i].xcoord + "," + array[i].ycoord + "," + array[i].status + ";";
+        }
+
+        doLogic(bigString);
+
+
+
+        loadAllCells();
+
+    }
+    
+</script>
+<header id="header">
+    <div class="d-flex flex-column">
+
+      <div class="profile">
+        <img src="images/AccountIcon2.png" alt="" class="img-fluid rounded-circle">
+        <!-- <h1 class="text-light"><a href="index.php"><?php echo explode("|",getEntity())[0].' '.explode("|",getEntity())[1];?></a></h1> -->
+        <h1 class="text-light"><a href="index.php">Name</a></h1>
+      </div>
+
+      <nav id="navbar" class="nav-menu navbar">
+        <ul>
+          <li><a href="index.php" class="nav-link scrollto active"><i class="bx bx-home"></i> <span>Home</span></a></li>
+          <li><a href="aboutme.php" class="nav-link scrollto"><i class="bx bx-user"></i> <span>About</span></a></li>
+         <li><a href="#contact" class="nav-link scrollto"><i class="bx bx-envelope"></i> <span>Contact</span></a></li>
+         <li><a href="myrestaurant.php" class="nav-link scrollto "><i class="bx bx-home"></i> <span>My restaurants</span></a></li>
+       <li style ="margin-top: -15%;"><a class="nav-link scrollto"></a>
+         
+          </li>
+          <li><a href="logout.php" class="nav-link scrollto active"  style="position: fixed; top:0;left:0 ;margin:1vh;"></a><i class="bx bx-home"></i> <span>Logout</span></a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+<footer id="footer">
+  <img src="images/logo.png" style="width: 10vw; margin-left: 4vw" alt="">
+    <div class="container">
+      
+      <div class="copyright" style=" margin-left: -2vw" >
+      
+        &copy; Copyright digEATal <strong><span></span></strong>
+      </div>
+    </div>
+  </footer>
+</body>
+
+
+</html>

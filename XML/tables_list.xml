@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Tables>
+  <table table_id="0">
+    <XCoord>0</XCoord>
+    <YCoord>1</YCoord>
+    <Capacity>2</Capacity>
+  </table>
+  <table table_id="1">
+    <XCoord>2</XCoord>
+    <YCoord>3</YCoord>
+    <Capacity>4</Capacity>
+  </table>
+  <table table_id="2">
+    <XCoord>5</XCoord>
+    <YCoord>5</YCoord>
+    <Capacity>8</Capacity>
+  </table>
+</Tables>
